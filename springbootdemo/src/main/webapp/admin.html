@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>管理后台 -梦在旅途的电商小店</title>
+<meta name="author" content="www.zuowenjun.cn" >
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<style type="text/css">
+	table{border:solid 1px blue;border-collapse: collapse;width:100%;margin:10px 1px;}
+	table tr >*{border:solid 1px blue,padding:5px;border:dotted 1px gray;}
+	.gpic{width:100px;height:100px;text-align:center;vertical-align:middle;}
+</style>
+</head>
+<body>
+	<div id="app">
+		<fieldset>
+			<legend>管理商品：</legend>
+			<table>
+				<colgroup>
+					<col style="width:auto">
+					<col style="width:auto">
+					<col style="width:100px">
+					<col style="width:300px">
+					<col style="width:auto">
+					<col style="width:auto">
+					<col style="width:auto">
+					<col style="width:auto">
+					<col style="width:auto">
+				</colgroup>
+				<tr>
+					<th>商品ID</th>
+					<th>商品名称</th>
+					<th>商品图片</th>
+					<th>商品介绍</th>
+					<th>单价</th>
+					<th>类别ID</th>
+					<th>最后编辑者</th>
+					<th>最后编辑时间</th>
+					<th>操作</th>
+				</tr>
+				<tr style="background-color:orange;">
+					<td>{{editgoods.id}}</td>
+					<td><input type="text" v-model="editgoods.title"></td>
+					<td><img v-bind:src="editgoods.picture" class="gpic">
+					<input class="upload" type="file" id="gpicfile" @change="selectimg($event.target)" accept="image/png,image/gif,image/jpeg"></td>
+					<td><textarea v-model="editgoods.introduction"></textarea></td>
+					<td><input type="text" v-model="editgoods.price"></td>
+					<td>
+						<select v-model="editgoods.categoryId">
+							<option v-for="c in categorys" v-bind:value="c.id">{{c.categoryName}}</option>
+						</select>
+					</td>
+					<td>{{editgoods.lastEditBy}}</td>
+					<td>{{editgoods.lastEditTime}}</td>
+					<td><button @click="savegoods(editgoods)">保存</button></td>
+				</tr>
+				<tr v-for="g in goodss">
+					<td>{{g.id}}</td>
+					<td>{{g.title}}</td>
+					<td><img v-bind:src="g.picture" class="gpic"></td>
+					<td>{{g.introduction}}</td>
+					<td>{{g.price}}</td>
+					<td>{{g.categoryId}}</td>
+					<td>{{g.lastEditBy}}</td>
+					<td>{{g.lastEditTime}}</td>
+					<td><button @click="editgoods(g)" disabled="disabled">修改</button>&nbsp;|&nbsp;<!-- UI暂不实现修改，禁用 -->
+					<button @click="delgoods(g)">删除</button></td>
+				</tr>
+			</table>
+		</fieldset>
+	</div>
+	<script type="text/javascript">
+		var vm=new Vue({
+			el:"#app",
+			data:{
+				categorys:[],
+				goodss:[],
+				editgoods:{
+					id:null,
+					title:null,
+					picture:null,
+					price:0.00,
+					introduction:null,
+					categoryId:1,
+					lastEditBy:"zuowenjun",
+					lastEditTime:null
+				}
+			},
+			created:function(){
+				this.$http.get('/api/categorys').then(function(res){
+					 this.categorys=res.body;  
+	                },function(){
+	                    alert("获取categorys失败！");
+	                });
+				
+				this.getGoodsListByPage(100,1);//DEMO,只加载第1页
+				 
+			},
+			methods:{
+				getGoodsListByPage:function(ps,pno){
+					var self = this;
+					//按分页检索商品列表
+					 this.$http.get('/api/goods' +'?pagesize='+ps +'&page=' + pno).then(function(res){
+						 self.goodss=res.body;  
+						 //alert(JSON.stringify(self.goods));
+		                },function(){
+		                    alert("获取goods失败！");
+		                });
+				},
+				selectimg:function(el){
+					
+		            let gpic=el.files[0];
+		            let type=gpic.type;//文件的类型，判断是否是图片
+		            let size=gpic.size;//文件的大小，判断图片的大小
+		            if('image/gif, image/jpeg, image/png, image/jpg'.indexOf(type) == -1){
+		                alert('请选择我们支持的图片格式！');
+		                return false;
+		            }
+		            if(size>3145728){
+		                alert('请选择3M以内的图片！');
+		                return false;
+		            }
+		            var uri ='';
+		            
+		            this.editgoods.picture=URL.createObjectURL(gpic);
+				},
+				savegoods:function(g){
+					var fileDom=document.getElementById("gpicfile");
+					let formData = new FormData();
+					formData.append('id', this.editgoods.id);
+					formData.append('title', this.editgoods.title);
+					formData.append('picture', fileDom.files[0]);
+					formData.append('price', this.editgoods.price);
+					formData.append('introduction', this.editgoods.introduction);
+					formData.append('categoryId', this.editgoods.categoryId);
+					
+					let config = {
+				              headers: {
+				                'Content-Type': 'multipart/form-data'
+				              }
+				            }
+					
+					  this.$http.post('/api/savegoods', formData, config).then(function (res) {
+			              alert(res.body.msg);
+			              if(res.body.code==0){
+			            	  this.goodss.unshift(res.body.data);//插入到数组最新面
+			            	  this.editgoods={//重新初始化，以便实现清空所有编辑框
+			      					id:null,
+			    					title:null,
+			    					picture:null,
+			    					price:0.00,
+			    					introduction:null,
+			    					categoryId:1,
+			    					lastEditBy:"zuowenjun",
+			    					lastEditTime:null
+			    				};
+			              }
+			            });
+				},
+				delgoods:function(g){
+					 this.$http.get('/api/delgoods/' + g.id).then(function(res){
+						 alert(res.body.msg); 
+						 if(res.body.code==0){
+							 this.goodss.remove(g);
+						 }
+		                },function(){
+		                    alert("删除goods失败！");
+		                });
+				}
+			}
+		});
+	
+		
+		Array.prototype.remove = function(val) { 
+			var index = this.indexOf(val); 
+			if (index > -1) { 
+			this.splice(index, 1); 
+			} 
+		};
+	</script>
+	
+</body>
+</html>

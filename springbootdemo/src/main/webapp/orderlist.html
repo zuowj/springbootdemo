@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>订单详情 -梦在旅途的电商小店</title>
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<style type="text/css">
+	table{border:solid 1px blue;border-collapse: collapse;width:100%;margin:10px 1px;}
+	table tr >*{border:solid 1px blue,padding:5px;border:dotted 1px gray;}
+	.cfmbar{text-align: center;}
+	.cfmbar button{border:none;background-color:blue;color:#ffffff;padding:10px 50px;}
+	#copy{margin-top:20px;text-align: center;}
+</style>
+</head>
+<body>
+	<div id="app">
+		<div>
+			<h2>订单列表：</h2>
+			<table>
+				<tr>
+					<th>订单号</th>
+					<th>商品数量</th>
+					<th>订单价格</th>
+					<th>完成否(收货确认)</th>
+					<th>创建时间</th>
+					<th>查看订单详情</th>
+				</tr>
+				<tr v-for="o in shoppingOrders">
+					<td>{{o.id}}</td>
+					<td>{{o.totalqty}}</td>
+					<td>{{o.totalprice.toFixed(2)}}</td>
+					<td>{{o.iscompleted?"已收货":"待收货"}}</td>
+					<td>{{o.createtime}}</td>
+					<td><button @click="showOrderDetail(o)">查看</button></td>
+				</tr>
+				<tr v-if="shoppingOrders.length==0" style="text-align: center;">
+					<td colspan="6">没有任何订单信息！</td>
+				</tr>
+			</table>
+		</div>
+		<div v-if="viewOrder!=null">
+			<h3>订单号【{{viewOrder.id}}】详情：</h3>
+			<table>
+				<tr>
+					<th>商品ID</th>
+					<th>商品名称</th>
+					<th>购买数量</th>
+					<th>费用</th>
+				</tr>
+				<tr v-for="od in viewOrderDetails.details">
+					<td>{{od.goodsid}}</td>
+					<td>{{goodsName(od)}}</td>
+					<td>{{od.qty}}</td>
+					<td>￥{{od.totalprice.toFixed(2)}}</td>
+				</tr>
+			</table>
+			<p class="cfmbar" v-if="!viewOrder.iscompleted">
+				<button @click="confirmOrderCompleted(viewOrder)" >确认完成（已收货）</button>
+			</p>
+		</div>
+	</div>
+	<p id="copy">
+	Copyright &copy;2019 &nbsp;
+	www.zuowenjun.cn and zuowj.cnblogs.com demo all rights.
+	</p>
+	<script type="text/javascript">
+		var vm=new Vue({
+			el:"#app",
+			data:{
+				shoppingOrders:[],
+				viewOrder:null,
+				viewOrderDetails:null
+			},
+			created:function(){
+				var self = this;
+				
+				 this.$http.get('/api/orders').then(function(res){
+					 self.shoppingOrders=res.body;  
+					 //alert(JSON.stringify(self.shoppingOrders));
+	                },function(){
+	                    alert("获取orders失败！");
+	                });
+			},
+			computed:{
+				goodsName(){//利用JS闭包实现传参
+					return function(od){
+						var goods= this.viewOrderDetails.goodss.filter(function(g){return g.id==od.goodsid })[0];
+						//alert(od.goodsid);
+						return goods.title;
+					}
+				}
+			},
+			methods:{
+				showOrderDetail:function(o){
+					 var self = this;
+					 this.$http.post('/api/orderdetail',{orderId:o.id}).then(function(res){
+						 if(res.body.code==0){
+						 	self.viewOrderDetails=res.body.data;  
+						 	//alert(JSON.stringify(self.viewOrderDetails));
+						 }else{
+							 alert(res.body.msg);
+							 self.viewOrderDetails=null;
+							 o=null;
+						 }
+						 self.viewOrder=o;
+		                },function(){
+		                    alert("获取orderdetail失败！");
+		                });
+				},
+				confirmOrderCompleted:function(o){
+					var self = this;
+					this.$http.post('/api/confirmOrderCompleted',{orderId:o.id}).then(function(res){
+						alert(res.body.msg);
+						if(res.body.code==0){
+							self.viewOrder.iscompleted=true;
+						}
+					}),function(){
+	                    alert("确认订单完成失败！");
+	                };
+				}
+			}
+		});
+		
+		function getQueryString(name) { 
+	        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+	        var r = window.location.search.substr(1).match(reg); 
+	        if (r != null) return unescape(r[2]); 
+	        return null; 
+	    }
+		
+		
+	</script>
+</body>
+</html>

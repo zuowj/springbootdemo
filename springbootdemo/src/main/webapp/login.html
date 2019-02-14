@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>登录入口  -梦在旅途的电商小店</title>
+<meta name="author" content="www.zuowenjun.cn" >
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<form method="post" @submit.prevent="loginsubmit">
+		<p>用户ID：</p>
+		<p><input type="text" v-model="uid"></p>
+				<p>密码：</p>
+		<p><input type="password" v-model="pwd"></p>
+		<p>
+			<button type="submit">登录</button>
+		</p>
+		</form>
+	</div>
+	<script type="text/javascript">
+		var vm=new Vue({
+			el:"#app",
+			data:{
+				uid:null,
+				pwd:null
+			},
+			methods:{
+				loginsubmit:function(){
+					
+					 this.$http.post('/api/login',{userid:this.uid,upwd:this.pwd}).then(function(res){
+						 var rs=res.body;
+						 if(rs.code==0){
+							 window.location.href="index.html";
+						 }else{
+							 alert(rs.msg);
+						 }
+		                },function(){
+		                    alert("登录请求失败！");
+		                });
+				}
+			}
+		});
+	</script>
+</body>
+</html>

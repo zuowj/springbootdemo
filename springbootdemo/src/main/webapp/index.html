@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>梦在旅途的电商小店Demo-Power by Spring Boot+MyBatis-Boot</title>
+<meta name="author" content="www.zuowenjun.cn" >
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<style type="text/css">
+	#catesbox ul li{float:left;padding:5px;margin-right:20px;border:1px solid green;display: inline-block;cursor:pointer;}
+	.clfx {clear:both;display:block;}
+	.gpic{width:100px;height:100px;text-align:center;vertical-align:middle;}
+	#goodsbox table {width:100%;border-collapse:collapse;}
+	#goodsbox table tr >*{border:1px solid blue;padding:5px;}
+	li.active{background-color:orange;font-weight:bold;}
+	#copy{
+		margin-top:20px;
+		text-align: center;
+	}
+	body{padding-top:51px;}
+	#topbar{height:50px;line-height:50px;margin:0;width:100%;background-color:WhiteSmoke;
+		position: fixed;top:0;border-bottom:1px solid darkgray;text-align: right;}
+</style>
+</head>
+<body>
+<div id="app">
+		<div id="topbar">
+		<a href="/cartlist.html" target="_blank">购物车(已加入商品数量：{{cartCount}})</a>&nbsp;|&nbsp;
+		<a href="/orderlist.html" target="_blank">订单中心</a>&nbsp;|&nbsp;
+		<a href="/admin.html" target="_blank">管理后台</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		</div>
+		<h2>商品类目：</h2>
+		<div id="catesbox">
+			<ul v-for="c in cates">
+				<li v-on:click="getGoodsListByCategory(c)" v-bind:class="{active:c.categoryName==curcate}">{{c.categoryName}}({{c.goodsCount}})</li>
+			</ul>
+			<div class="clfx"></div>
+		</div>
+	<h2>当前浏览的商品分类：<span>{{curcate}}</span></h2>
+		<div id="goodsbox">
+			<table>
+				<tr>
+					<th>商品图片</th>
+					<th>商品标题</th>
+					<th>价格</th>
+					<th>操作</th>
+				</tr>
+				<tr v-for="g in goods">
+					<td><img v-bind:src="g.picture" class="gpic"></td>
+					<td><a v-bind:href="'/detail.html?gid=' + g.id" target="_blank">{{g.title}}</a></td>
+					<td>￥{{g.price}}</td>
+					<td><button v-on:click="addToShoppingCart(g)">加入购物车</button></td>
+				</tr>
+			</table>
+		</div>
+</div>
+	<p id="copy">
+	Copyright &copy;2019 &nbsp;
+	www.zuowenjun.cn and zuowj.cnblogs.com demo all rights.
+	</p>
+	<script type="text/javascript">
+		var vm = new Vue({
+			el:"#app",
+			data:{
+				cartCount:0,
+				cates:[],
+				goods:[],
+				curcate:"ALL"
+			},
+			created:function(){
+				var self = this;
+				 this.$http.get('/api/categorys').then(function(res){
+					 self.cates=res.body;  
+					 //alert(JSON.stringify(self.cates));
+	                },function(){
+	                    alert("获取categorys失败！");
+	                });
+				 
+				 this.$http.get('/api/cartlist').then(function(res){
+					 self.cartCount=res.body.length;  
+					 //alert(JSON.stringify(self.goods));
+	                },function(){
+	                    alert("获取购物车信息失败！");
+	                });
+				 
+				//按分页检索商品列表
+				 this.getGoodsListByPage(10,1);
+			},
+			methods:{
+				getGoodsListByCategory:function(cate){
+					var self = this;
+					//按类别检索商品列表
+					 this.$http.get('/api/goods/' + cate.id).then(function(res){
+						 self.goods=res.body;   
+						 self.curcate=cate.categoryName;
+						 //alert(JSON.stringify(self.goods));
+		                },function(){
+		                    alert("获取goods失败！");
+		                });
+				},
+				getGoodsListByPage:function(ps,pno){
+					var self = this;
+					//按分页检索商品列表
+					 this.$http.get('/api/goods' +'?pagesize='+ps +'&page=' + pno).then(function(res){
+						 self.goods=res.body;  
+						 self.curcate="ALL";
+						 //alert(JSON.stringify(self.goods));
+		                },function(){
+		                    alert("获取goods失败！");
+		                });
+				},
+				addToShoppingCart:function(goods){
+					//加入购物车
+					var self = this;
+					var qty=prompt('请输入购买数量',1);
+					 this.$http.post('/api/addToShoppingCart',{goodsid:goods.id,goodsqty:qty}).then(function(res){
+						 var rs=res.body;
+						 alert(rs.msg);
+						 self.cartCount=rs.data.cartCount;
+		                },function(){
+		                    alert("加入购物车失败");
+		                });
+				}
+			}
+		});
+
+	</script>
+</body>
+</html>

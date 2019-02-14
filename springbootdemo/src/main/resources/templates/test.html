@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>test User List -power by thymeleaf</title>
+<style type="text/css">
+	table{
+		border:2px solid blue;
+		border-collapse:collapse;
+		width:98%;
+	}
+	
+	table *{
+		border:1px solid blue;
+		text-align:center;
+	}
+	
+	thead{
+		background-color:purple;
+		color:yellow;
+	}
+	
+	th,td{
+		padding:5px;
+	}
+	
+	#copy{
+		margin-top:100px;
+		text-align: center;
+	}
+	
+</style>
+</head>
+<body>
+	<h1 th:text="${title}"></h1>
+	<table>
+		<thead>
+			<tr>
+				<th>SeqNo</th>
+				<th>userId</th>
+				<th>nickName</th>
+				<th>depositAmount</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:if="${users}!=null" th:each="user,iterStat:${users}">
+				<td th:text="${iterStat.index}+1">1</td>
+				<td th:text="${user.userid}">www.zuowenjun.cn</td>
+				<td th:text="${user.nickname}">梦在旅途</td>
+				<td th:text="${user.depositamount}">520</td>
+			</tr>
+			<tr th:unless="${users.size()} gt 0">
+				<td colspan="4">暂无相关记录！</td>
+			</tr>
+		</tbody>
+	</table>
+	<p id="copy">
+	Copyright &copy;<span th:text="${#dates.format(#dates.createToday(),'yyyy')}"></span>
+	www.zuowenjun.cn and zuowj.cnblogs.com demo all rights.
+	</p>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.zuowenjun.boot.mapper.ShoppingCartMapper">
+    <resultMap id="shoppingCartMap" type="ShoppingCart" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="shopper" property="shopper" jdbcType="NVARCHAR" />
+        <result column="goodsId" property="goodsId" jdbcType="INTEGER" />
+        <result column="qty" property="qty" jdbcType="INTEGER"/>
+        <result column="addedTime" property="addedTime" jdbcType="DATE" />
+        <!-- referseee https://www.cnblogs.com/ysocean/p/7237499.html -->
+        <association property="inGoods" javaType="cn.zuowenjun.boot.domain.Goods">
+        	<id column="id" property="id" jdbcType="INTEGER" />
+        	<result column="title" property="title" />
+        	<result column="picture" property="picture" />
+        	<result column="price" property="price" />
+        	<result column="introduction" property="introduction" />
+        	<result column="categoryId" property="categoryId" />
+        	<result column="lastEditBy" property="lastEditBy" />
+        	<result column="lastEditTime" property="lastEditTime" />
+        </association>
+    </resultMap>
+
+    <!-- 如果返回的结果与某个实体类完全相同，其实完全不需要上面的resultMap，而是直接使用resultType=类名，
+    	如：resultType=cn.zuowenjun.boot.domain.ShoppingCart(简写别名：ShoppingCart),此处是示例用法，故采取指定映射 -->
+    <select id="getList" parameterType="string" resultMap="shoppingCartMap">
+    	select * from TA_TestShoppingCart a inner join TA_TestGoods b  on a.goodsId=b.id  
+    	where shopper=#{shopper} order by addedTime
+    </select>
+    
+    <select id="getBuyCount" parameterType="string" resultType="int">
+    	select count(1) from (select goodsId from TA_TestShoppingCart where shopper=#{shopper} 
+    	group by goodsId) as t
+    </select>
+    
+    <select id="get"  resultMap="shoppingCartMap">
+    	 select * from TA_TestShoppingCart a inner join TA_TestGoods b  on a.goodsId=b.id  
+    	 where shopper=#{shopper} and goodsId=#{goodsId}
+    </select>
+    
+    <insert id="insert" parameterType="ShoppingCart" 
+    	useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    	insert into TA_TestShoppingCart(shopper, goodsId, qty, addedTime) 
+    	values(#{shopper},#{goodsId},#{qty},getdate())
+    </insert>
+    
+    <update id="update" parameterType="ShoppingCart" >
+    	update TA_TestShoppingCart set shopper=#{shopper},goodsId=#{goodsId},qty=#{qty},addedTime=getdate() 
+    	where id=#{id}
+    </update>
+    
+    <delete id="deleteItem" parameterType="int">
+    	delete from TA_TestShoppingCart where id=#{id}
+    </delete>
+    
+    <delete id="delete" parameterType="string">
+    	delete from TA_TestShoppingCart where shopper=#{shopper}
+    </delete>
+    
+    
+</mapper>

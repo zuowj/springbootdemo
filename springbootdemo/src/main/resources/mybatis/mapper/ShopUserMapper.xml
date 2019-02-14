@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zuowenjun.boot.mapper.ShopUserMapper">
+  <resultMap id="BaseResultMap" type="cn.zuowenjun.boot.domain.ShopUser">
+    <id column="userId" jdbcType="VARCHAR" property="userid" />
+    <result column="passwordHash" jdbcType="NVARCHAR" property="passwordhash" />
+    <result column="nickName" jdbcType="NVARCHAR" property="nickname" />
+    <result column="depositAmount" jdbcType="DECIMAL" property="depositamount" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from TA_TestShopUser
+    where userId = #{userid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="cn.zuowenjun.boot.domain.ShopUser">
+    insert into TA_TestShopUser (userId, passwordHash, nickName, 
+      depositAmount)
+    values (#{userid,jdbcType=VARCHAR}, #{passwordhash,jdbcType=NVARCHAR}, #{nickname,jdbcType=NVARCHAR}, 
+      #{depositamount,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.zuowenjun.boot.domain.ShopUser">
+    update TA_TestShopUser
+    set passwordHash = #{passwordhash,jdbcType=NVARCHAR},
+      nickName = #{nickname,jdbcType=NVARCHAR},
+      depositAmount = #{depositamount,jdbcType=DECIMAL}
+    where userId = #{userid,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select userId, passwordHash, nickName, depositAmount
+    from TA_TestShopUser
+    where userId = #{userid,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select userId, passwordHash, nickName, depositAmount
+    from TA_TestShopUser
+  </select>
+</mapper>

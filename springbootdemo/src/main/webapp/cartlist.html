@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>购物车详情 -梦在旅途的电商小店</title>
+<meta name="author" content="www.zuowenjun.cn" >
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<style type="text/css">
+	.toolbar{margin:10px 5px;}
+	.carttable{width:100%;margin:0px;padding:5px;border:1px solid gray;}
+	.carttable tr >*{border-bottom:1px solid gray;padding:5px;text-align: center;}
+	.buybtn{background-color:green;border:none;width:280px;padding:20px;color:white;font-size:20pt;}
+	#copy{margin-top:20px;text-align: center;}
+</style>
+</head>
+<body>
+	<div id="app">
+		<div class="toolbar">
+			<button @click="deleteItem()" :disabled="carts.length==0">移出购物车</button>&nbsp;|&nbsp;
+			<button @click="clearCart()" :disabled="carts.length==0">清空购物车</button>
+		</div>
+		<div>
+			<table class="carttable">
+				<tr>
+					<th>选择</th>
+					<th>商品ID</th>
+					<th>商品名称</th>
+					<th>预购买数量</th>
+					<th>价格</th>
+					<th>添加时间</th>
+				</tr>
+				<tr v-for="c in carts">
+					<td><input type="checkbox" class="chkitem" @click="checkitem(c,$event.target)" :checked="chkedItemIds.indexOf(c.id)>-1"></td>
+					<td>{{c.goodsId}}</td>
+					<td>{{c.inGoods.title}}</td>
+					<td>{{c.qty}}</td>
+					<td>￥{{(c.inGoods.price * c.qty).toFixed(2)}}</td>
+					<td>{{c.addedTime}}</td>
+				</tr>
+				<tr v-if="carts.length==0" style="text-align: center;">
+					<td colspan="6">空空如也，赶紧选购商品吧！~</td>
+				</tr>
+			</table>
+		</div>
+		<p style="text-align: center;">
+			<button class="buybtn" @click="createOrder()" :disabled="carts.length==0">立即下单</button>
+		</p>
+	</div>
+	<p id="copy">
+	Copyright &copy;2019 &nbsp;
+	www.zuowenjun.cn and zuowj.cnblogs.com demo all rights.
+	</p>
+	<script type="text/javascript">
+		var vm=new Vue({
+			el:"#app",
+			data:{
+				carts:[],
+				chkedItemIds:[]
+			},
+			created:function(){
+				var self = this;
+
+				 this.$http.get('/api/cartlist').then(function(res){
+					 self.carts=res.body;  
+					 //alert(JSON.stringify(self.carts));
+	                },function(){
+	                    alert("获取购物车信息失败！");
+	                });
+				 
+			},
+			methods:{
+				checkitem:function(cart,chk){
+					//alert(chk.checked);
+					if(chk.checked){
+						this.chkedItemIds.push(cart.id);
+					}else{
+						this.chkedItemIds.remove(cart.id);
+					}
+				},
+				deleteItem:function(){
+					var self = this;
+					//alert(JSON.stringify(self.chkedItemIds));
+					 this.$http.post('/api/deletecartitems-many',self.chkedItemIds).then(function(res){ 
+						 self.carts= self.carts.filter(function(e){ return self.chkedItemIds.indexOf(e.id)<=-1;});
+						 alert(res.body.msg);
+		                },function(){
+		                    alert("删除失败！");
+		                });
+				},
+				clearCart:function(){
+					var self = this;
+					 this.$http.post('/api/deletecartitems-all').then(function(res){ 
+						 self.carts=[];
+						 alert(res.body.msg);
+		                },function(){
+		                    alert("删除失败！");
+		                });
+				},
+				createOrder:function(){
+					var self = this;
+					 this.$http.post('/api/createorder').then(function(res){ 
+						 alert(res.body.msg);
+						 if(res.body.code==0){//如查下单成功，则清空购物车
+							 self.carts=[];
+						 }
+		                },function(){
+		                    alert("下单失败！");
+		                });
+				}
+			}
+		});
+		
+		Array.prototype.remove = function(val) { 
+				var index = this.indexOf(val); 
+				if (index > -1) { 
+				this.splice(index, 1); 
+				} 
+			};
+				
+	</script>
+</body>
+</html>

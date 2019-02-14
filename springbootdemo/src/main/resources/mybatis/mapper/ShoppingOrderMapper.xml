@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zuowenjun.boot.mapper.ShoppingOrderMapper">
+  <resultMap id="BaseResultMap" type="cn.zuowenjun.boot.domain.ShoppingOrder">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="shopper" jdbcType="NVARCHAR" property="shopper" />
+    <result column="totalQty" jdbcType="INTEGER" property="totalqty" />
+    <result column="totalPrice" jdbcType="DECIMAL" property="totalprice" />
+    <result column="isCompleted" jdbcType="BIT" property="iscompleted" />
+    <result column="createBy" jdbcType="NVARCHAR" property="createby" />
+    <result column="createTime" jdbcType="TIMESTAMP" property="createtime" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from TA_TestShoppingOrder
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.zuowenjun.boot.domain.ShoppingOrder" useGeneratedKeys="true">
+    insert into TA_TestShoppingOrder (shopper, totalQty, totalPrice, 
+      isCompleted, createBy, createTime
+      )
+    values (#{shopper,jdbcType=NVARCHAR}, #{totalqty,jdbcType=INTEGER}, #{totalprice,jdbcType=DECIMAL}, 
+      #{iscompleted,jdbcType=BIT}, #{createby,jdbcType=NVARCHAR}, #{createtime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.zuowenjun.boot.domain.ShoppingOrder">
+    update TA_TestShoppingOrder
+    set shopper = #{shopper,jdbcType=NVARCHAR},
+      totalQty = #{totalqty,jdbcType=INTEGER},
+      totalPrice = #{totalprice,jdbcType=DECIMAL},
+      isCompleted = #{iscompleted,jdbcType=BIT},
+      createBy = #{createby,jdbcType=NVARCHAR},
+      createTime = #{createtime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, shopper, totalQty, totalPrice, isCompleted, createBy, createTime
+    from TA_TestShoppingOrder
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, shopper, totalQty, totalPrice, isCompleted, createBy, createTime
+    from TA_TestShoppingOrder
+  </select>
+</mapper>
